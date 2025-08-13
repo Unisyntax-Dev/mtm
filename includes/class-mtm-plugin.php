@@ -30,6 +30,7 @@ class MTM_Plugin
         if (class_exists('MTM_I18n'))          (new MTM_I18n())->load_textdomain();
         if (class_exists('MTM_Assets'))        (new MTM_Assets())->hooks();
         if (class_exists('MTM_Admin_Menu'))    (new MTM_Admin_Menu())->hooks();
+        if (class_exists('MTM_Settings'))      (new MTM_Settings())->hooks();
         if (class_exists('MTM_Shortcodes'))    (new MTM_Shortcodes())->hooks();
         if (class_exists('MTM_REST_Controller')) (new MTM_REST_Controller())->hooks();
     }
