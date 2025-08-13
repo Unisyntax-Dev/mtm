@@ -12,6 +12,7 @@ $files = [
     'class-mtm-db.php',
     'class-mtm-tasks-service.php',
     'class-mtm-i18n.php',
+    'class-mtm-settings.php',
 ];
 
 foreach ($files as $file) {
