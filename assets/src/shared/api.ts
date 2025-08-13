@@ -1,28 +1,94 @@
-﻿export const apiBase = (window as any).MTM?.rest ?? "/wp-json/mtm/v1";
+﻿export type Task = {
+    id: number;
+    title: string;
+    description?: string;
+    created_at?: string | null;
+};
 
-export async function listTasks(limit = 5) {
-    const r = await fetch(`${apiBase}/tasks?limit=${limit}`);
-    return r.json();
+export type ApiListResp =
+    | { success: true; items: Task[] }
+    | { success: false; message: string };
+
+export type ApiCreateResp =
+    | { success: true; item: Task; items: Task[] }
+    | { success: false; message: string };
+
+export type ApiDeleteResp = ApiListResp;
+
+export type ApiUpdateResp =
+    | { success: true; item: Task }
+    | { success: false; message: string };
+
+export const apiBaseRaw: string = (window as any).MTM?.rest ?? "/wp-json/mtm/v1";
+
+export const apiBase: string = apiBaseRaw.replace(/\/+$/, "");
+const nonce: string = (window as any).MTM?.nonce ?? "";
+
+type Method = "GET" | "POST" | "DELETE" | "PUT" | "PATCH";
+
+function withQuery(url: string, q: string): string {
+    return url.includes("?") ? `${url}&${q}` : `${url}?${q}`;
 }
 
-export async function createTask(payload: { title: string; description?: string }) {
-    const r = await fetch(`${apiBase}/tasks`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "X-WP-Nonce": (window as any).MTM?.nonce ?? "",
-        },
-        body: JSON.stringify(payload),
+async function request<T>(
+    url: string,
+    method: Method = "GET",
+    body?: unknown,
+    signal?: AbortSignal
+): Promise<T> {
+    const headers: Record<string, string> = { "X-WP-Nonce": nonce };
+    if (body !== undefined) headers["Content-Type"] = "application/json";
+
+    const res = await fetch(url, {
+        method,
+        headers,
+        body: body !== undefined ? JSON.stringify(body) : undefined,
+        signal,
+        credentials: "same-origin",
     });
-    return r.json();
+
+    let json: any = null;
+    try {
+        json = await res.json();
+    } catch {
+        //
+    }
+
+    if (!res.ok) {
+        const msg = json?.message || `Request failed (${res.status})`;
+        return { success: false, message: msg } as any as T;
+    }
+    return json as T;
 }
 
-export async function deleteTask(id: number) {
-    const r = await fetch(`${apiBase}/tasks/${id}`, {
-        method: "DELETE",
-        headers: {
-            "X-WP-Nonce": (window as any).MTM?.nonce ?? "",
-        },
-    });
-    return r.json();
+export async function listTasks(
+    limit = 5,
+    signal?: AbortSignal
+): Promise<ApiListResp> {
+    const url = withQuery(
+        `${apiBase}/tasks`,
+        `limit=${Math.max(1, Math.min(100, limit))}`
+    );
+    return request<ApiListResp>(url, "GET", undefined, signal);
+}
+
+export async function createTask(
+    payload: { title: string; description?: string }
+): Promise<ApiCreateResp> {
+    return request<ApiCreateResp>(`${apiBase}/tasks`, "POST", payload);
+}
+
+export async function deleteTask(id: number): Promise<ApiDeleteResp> {
+    return request<ApiDeleteResp>(`${apiBase}/tasks/${Number(id)}`, "DELETE");
+}
+
+export async function updateTask(
+    id: number,
+    payload: Partial<{ title: string; description: string }>
+): Promise<ApiUpdateResp> {
+    return request<ApiUpdateResp>(
+        `${apiBase}/tasks/${Number(id)}`,
+        "PATCH",
+        payload
+    );
 }

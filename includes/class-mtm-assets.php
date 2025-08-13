@@ -17,7 +17,7 @@ class MTM_Assets {
             }
             wp_enqueue_script('mtm-public', $url . 'public.js', [], filemtime($dir.'public.js'), true);
             wp_localize_script('mtm-public', 'MTM', [
-                'rest'  => esc_url_raw( rest_url('mtm/v1') ),
+                'rest'  => esc_url_raw( untrailingslashit( rest_url('mtm/v1') ) ),
                 'nonce' => wp_create_nonce('wp_rest'),
             ]);
         }
@@ -33,7 +33,7 @@ class MTM_Assets {
             }
             wp_enqueue_script('mtm-admin', $url . 'admin.js', [], filemtime($dir.'admin.js'), true);
             wp_localize_script('mtm-admin', 'MTM', [
-                'rest'  => esc_url_raw( rest_url('mtm/v1') ),
+                'rest'  => esc_url_raw( untrailingslashit( rest_url('mtm/v1') ) ),
                 'nonce' => wp_create_nonce('wp_rest'),
             ]);
         }
