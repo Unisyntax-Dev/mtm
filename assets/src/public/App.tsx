@@ -7,7 +7,8 @@ export default function App() {
     const [tasks, setTasks] = useState<Task[]>([]);
     const [loading, setLoading] = useState(false);
 
-    // AbortController — чтобы не ловить гонки при быстрых переходах
+    const canDelete = ((window as any).MTM?.settings?.enable_delete ?? 1) == 1;
+
     const aborter = useMemo(() => new AbortController(), []);
     useEffect(() => () => aborter.abort(), [aborter]);
 
@@ -34,7 +35,6 @@ export default function App() {
         if (res?.success) {
             setTitle("");
             setDesc("");
-            // API отдаёт свежие 5 задач
             setTasks(res.items || []);
         } else {
             alert(res?.message || "Create failed");
@@ -42,6 +42,7 @@ export default function App() {
     };
 
     const onDelete = async (id: number) => {
+        if (!canDelete) return; // страховка на фронте
         const res = await deleteTask(id);
         if (res?.success) setTasks(res.items || []);
         else alert(res?.message || "Delete failed");
@@ -85,11 +86,11 @@ export default function App() {
                     <li key={t.id} className="mtm__item">
                         <div className="mtm__item-head">
                             <strong>{t.title}</strong>
-                            <button className="mtm__delete" onClick={() => onDelete(t.id)} aria-label="Delete">
-                                ×
-                            </button>
+                            {canDelete && (
+                                <button className="mtm__delete" onClick={() => onDelete(t.id)} aria-label="Delete">×</button>
+                            )}
                         </div>
-                        {t.description && <div className="mtm__desc">{t.description}</div>}
+                        {t.description && <div className="mtm__desc" dangerouslySetInnerHTML={{ __html: t.description }} />}
                         {t.created_at && <div className="mtm__date">{t.created_at}</div>}
                     </li>
                 ))}

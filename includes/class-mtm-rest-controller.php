@@ -44,9 +44,9 @@ class MTM_REST_Controller extends WP_REST_Controller {
 
         register_rest_route($this->namespace, '/' . $this->rest_base . '/(?P<id>\d+)', [
             [
-                'methods'  => WP_REST_Server::DELETABLE, // DELETE /tasks/{id}
+                'methods'  => WP_REST_Server::DELETABLE,
                 'callback' => [$this, 'delete'],
-                'permission_callback' => '__return_true',
+                'permission_callback' => [$this, 'permission_delete'],
             ],
             [
                 'methods'  => WP_REST_Server::EDITABLE,  // PUT/PATCH /tasks/{id}
@@ -64,7 +64,6 @@ class MTM_REST_Controller extends WP_REST_Controller {
         $opt = get_option('mtm_settings', []);
         if (!is_array($opt)) $opt = [];
 
-        // если класс настроек недоступен — подстрахуемся
         if (!class_exists('MTM_Settings')) {
             return 5;
         }
@@ -72,17 +71,15 @@ class MTM_REST_Controller extends WP_REST_Controller {
         $defaults = MTM_Settings::defaults();
         $o = wp_parse_args($opt, $defaults);
 
-        // настройки уже санитизируются до 1–20, но продублируем
         return max(1, min(20, (int)$o['items_limit']));
     }
 
     public function list(WP_REST_Request $req) {
         $limit = $req->get_param('limit');
         if ($limit === null || $limit === '') {
-            // если limit не передали — берём из настроек
             $limit = $this->get_items_limit_from_settings();
         } else {
-            $limit = max(1, min(100, (int)$limit)); // если передали — уважаем
+            $limit = max(1, min(100, (int)$limit));
         }
 
         $items = $this->svc->list_recent($limit);
@@ -101,7 +98,6 @@ class MTM_REST_Controller extends WP_REST_Controller {
             ], 400);
         }
 
-        // ⚠️ раньше тут было list_recent(5) — теперь уважаем настройку
         $limit = $this->get_items_limit_from_settings();
         $items = $this->svc->list_recent($limit);
 
@@ -129,7 +125,6 @@ class MTM_REST_Controller extends WP_REST_Controller {
             ], 500);
         }
 
-        // ⚠️ раньше тут было list_recent(5) — теперь уважаем настройку
         $limit = $this->get_items_limit_from_settings();
         $items = $this->svc->list_recent($limit);
 

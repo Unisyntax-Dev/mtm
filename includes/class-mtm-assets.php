@@ -16,14 +16,25 @@ class MTM_Assets {
                 wp_enqueue_style('mtm-public', $url . 'public.css', [], filemtime($dir.'public.css'));
             }
             wp_enqueue_script('mtm-public', $url . 'public.js', [], filemtime($dir.'public.js'), true);
+
+            $opt = get_option('mtm_settings', []);
+            if (!is_array($opt)) $opt = [];
+            if (class_exists('MTM_Settings')) {
+                $opt = wp_parse_args($opt, MTM_Settings::defaults());
+            }
+
             wp_localize_script('mtm-public', 'MTM', [
-                'rest'  => esc_url_raw( untrailingslashit( rest_url('mtm/v1') ) ),
-                'nonce' => wp_create_nonce('wp_rest'),
+                'rest'      => esc_url_raw( untrailingslashit( rest_url('mtm/v1') ) ),
+                'nonce'     => wp_create_nonce('wp_rest'),
+                'settings'  => $opt,
             ]);
         }
     }
 
-    public function enqueue_admin() {
+    public function enqueue_admin($hook) {
+        $our_screen = 'settings_page_mtm_settings_page';
+        if ($hook !== $our_screen) return;
+
         $dir = MTM_PATH . 'assets/dist/';
         $url = MTM_URL  . 'assets/dist/';
 
