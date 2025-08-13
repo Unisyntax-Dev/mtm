@@ -11,14 +11,14 @@ export default function App() {
     const aborter = useMemo(() => new AbortController(), []);
     useEffect(() => () => aborter.abort(), [aborter]);
 
-    const refresh = async (limit = 5) => {
-        const res = await listTasks(limit, aborter.signal);
+    const refresh = async () => {
+        const res = await listTasks(undefined, aborter.signal);
         if (res?.success) setTasks(res.items || []);
     };
 
     useEffect(() => {
-        refresh(5);
-    }, []); // один раз при маунте
+        refresh();
+    }, []);
 
     const onSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -47,11 +47,9 @@ export default function App() {
         else alert(res?.message || "Delete failed");
     };
 
-    // пример обновления (пока UI-кнопку не рисуем, но API готов)
     const onRename = async (id: number, newTitle: string) => {
         const res = await updateTask(id, { title: newTitle });
         if (res?.success) {
-            // точечно заменим элемент
             setTasks((prev) => prev.map((t) => (t.id === id ? res.item : t)));
         } else {
             alert(res?.message || "Update failed");

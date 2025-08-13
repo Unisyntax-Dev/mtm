@@ -18,16 +18,16 @@ class MTM_REST_Controller extends WP_REST_Controller {
     public function register_routes() {
         register_rest_route($this->namespace, '/' . $this->rest_base, [
             [
-                'methods'  => WP_REST_Server::READABLE,   // GET /tasks?limit=5
+                'methods'  => WP_REST_Server::READABLE,   // GET /tasks[?limit=...]
                 'callback' => [$this, 'list'],
                 'permission_callback' => '__return_true',
                 'args' => [
                     'limit' => [
-                        'type' => 'integer',
+                        'type'     => 'integer',
                         'required' => false,
-                        'default' => 5,
-                        'minimum' => 1,
-                        'maximum' => 100,
+                        // ⚠️ убрали 'default', чтобы можно было fallback'нуть к настройкам
+                        'minimum'  => 1,
+                        'maximum'  => 100,
                     ],
                 ],
             ],
@@ -60,15 +60,33 @@ class MTM_REST_Controller extends WP_REST_Controller {
         ]);
     }
 
-    public function list(WP_REST_Request $req) {
-        $limit = (int) $req->get_param('limit');
-        $limit = max(1, min(100, $limit ?: 5));
-        $items = $this->svc->list_recent($limit);
+    private function get_items_limit_from_settings(): int {
+        $opt = get_option('mtm_settings', []);
+        if (!is_array($opt)) $opt = [];
 
-        return rest_ensure_response([
-            'success' => true,
-            'items'   => $items,
-        ]);
+        // если класс настроек недоступен — подстрахуемся
+        if (!class_exists('MTM_Settings')) {
+            return 5;
+        }
+
+        $defaults = MTM_Settings::defaults();
+        $o = wp_parse_args($opt, $defaults);
+
+        // настройки уже санитизируются до 1–20, но продублируем
+        return max(1, min(20, (int)$o['items_limit']));
+    }
+
+    public function list(WP_REST_Request $req) {
+        $limit = $req->get_param('limit');
+        if ($limit === null || $limit === '') {
+            // если limit не передали — берём из настроек
+            $limit = $this->get_items_limit_from_settings();
+        } else {
+            $limit = max(1, min(100, (int)$limit)); // если передали — уважаем
+        }
+
+        $items = $this->svc->list_recent($limit);
+        return rest_ensure_response(['success' => true, 'items' => $items]);
     }
 
     public function create(WP_REST_Request $req) {
@@ -83,8 +101,10 @@ class MTM_REST_Controller extends WP_REST_Controller {
             ], 400);
         }
 
-        // Вернём свежие 5, чтобы фронту не делать второй запрос
-        $items = $this->svc->list_recent(5);
+        // ⚠️ раньше тут было list_recent(5) — теперь уважаем настройку
+        $limit = $this->get_items_limit_from_settings();
+        $items = $this->svc->list_recent($limit);
+
         return new WP_REST_Response([
             'success' => true,
             'item'    => $res,
@@ -109,7 +129,10 @@ class MTM_REST_Controller extends WP_REST_Controller {
             ], 500);
         }
 
-        $items = $this->svc->list_recent(5);
+        // ⚠️ раньше тут было list_recent(5) — теперь уважаем настройку
+        $limit = $this->get_items_limit_from_settings();
+        $items = $this->svc->list_recent($limit);
+
         return new WP_REST_Response([
             'success' => true,
             'items'   => $items,

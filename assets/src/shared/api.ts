@@ -62,13 +62,13 @@ async function request<T>(
 }
 
 export async function listTasks(
-    limit = 5,
+    limit?: number,
     signal?: AbortSignal
 ): Promise<ApiListResp> {
-    const url = withQuery(
-        `${apiBase}/tasks`,
-        `limit=${Math.max(1, Math.min(100, limit))}`
-    );
+    let url = `${apiBase}/tasks`;
+    if (typeof limit === "number") {
+        url = withQuery(url, `limit=${Math.max(1, Math.min(100, limit))}`);
+    }
     return request<ApiListResp>(url, "GET", undefined, signal);
 }
 
