@@ -11,7 +11,6 @@ $files = [
     'class-mtm-rest-controller.php',
     'class-mtm-db.php',
     'class-mtm-tasks-service.php',
-    'class-mtm-i18n.php',
     'class-mtm-settings.php',
 ];
 
@@ -27,7 +26,6 @@ foreach ($files as $file) {
 class MTM_Plugin
 {
     public function init() {
-        if (class_exists('MTM_I18n'))          (new MTM_I18n())->load_textdomain();
         if (class_exists('MTM_Assets'))        (new MTM_Assets())->hooks();
         if (class_exists('MTM_Admin_Menu'))    (new MTM_Admin_Menu())->hooks();
         if (class_exists('MTM_Settings'))      (new MTM_Settings())->hooks();
