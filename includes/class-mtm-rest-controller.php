@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 if (!defined('ABSPATH')) exit;
 
 class MTM_REST_Controller extends WP_REST_Controller {
