@@ -21,6 +21,8 @@ export default function App() {
     const [desc, setDesc] = useState("");
     const [tasks, setTasks] = useState<Task[]>([]);
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [notice, setNotice] = useState<string | null>(null);
 
     const iconsBase = (window as any).MTM?.assets?.icons ?? "";
 
@@ -40,8 +42,12 @@ export default function App() {
     // Fetch tasks from API
     const refresh = async () => {
         const res = await listTasks(undefined, aborter.signal);
-        if (res?.success) setTasks(res.items || []);
-        else alert(res?.message || "Fetch failed");
+        if (res?.success) {
+            setTasks(res.items || []);
+            setError(null);
+        } else {
+            setError(res?.message || "Fetch failed");
+        }
     };
 
     useEffect(() => {
@@ -64,8 +70,11 @@ export default function App() {
             setTitle("");
             setDesc("");
             setTasks(res.items || []);
+            setNotice("Task created");
+            setError(null);
         } else {
-            alert(res?.message || "Create failed");
+            setError(res?.message || "Create failed");
+            setNotice(null);
         }
     };
 
@@ -73,8 +82,14 @@ export default function App() {
     const onDelete = async (id: number) => {
         if (!canDelete) return;
         const res = await deleteTask(id);
-        if (res?.success) setTasks(res.items || []);
-        else alert(res?.message || "Delete failed");
+        if (res?.success) {
+            setTasks(res.items || []);
+            setNotice("Task deleted");
+            setError(null);
+        } else {
+            setError(res?.message || "Delete failed");
+            setNotice(null);
+        }
     };
 
     // --- Edit handlers ---
@@ -96,7 +111,8 @@ export default function App() {
         const newDesc  = draftDesc.trim();
 
         if (!newTitle) {
-            alert("Title is required");
+            setError("Title is required");
+            setNotice(null);
             return;
         }
 
@@ -107,13 +123,26 @@ export default function App() {
         if (res?.success) {
             setTasks((prev) => prev.map((t) => (t.id === id ? res.item : t)));
             cancelEdit();
+            setNotice("Task updated");
+            setError(null);
         } else {
-            alert(res?.message || "Update failed");
+            setError(res?.message || "Update failed");
+            setNotice(null);
         }
     };
 
     return (
         <div className="mtm">
+            {error && (
+                <div role="alert" className="mtm__notice mtm__notice--error">
+                    {error}
+                </div>
+            )}
+            {notice && (
+                <div role="status" className="mtm__notice mtm__notice--success">
+                    {notice}
+                </div>
+            )}
             {/* Task creation form */}
             <form className="mtm__form" onSubmit={onSubmit}>
                 <label className="mtm__label" htmlFor="mtm-title">Title*</label>
