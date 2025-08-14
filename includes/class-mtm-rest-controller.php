@@ -25,7 +25,6 @@ class MTM_REST_Controller extends WP_REST_Controller {
                     'limit' => [
                         'type'     => 'integer',
                         'required' => false,
-                        // ⚠️ убрали 'default', чтобы можно было fallback'нуть к настройкам
                         'minimum'  => 1,
                         'maximum'  => 100,
                     ],
@@ -108,6 +107,30 @@ class MTM_REST_Controller extends WP_REST_Controller {
         ], 201);
     }
 
+    private function is_delete_enabled(): bool {
+        $opt = get_option('mtm_settings', []);
+        if (!is_array($opt)) $opt = [];
+        if (class_exists('MTM_Settings')) {
+            $opt = wp_parse_args($opt, MTM_Settings::defaults());
+        }
+        return !empty($opt['enable_delete']);
+    }
+
+    /**
+     * Permission callback для маршрута DELETE /tasks/{id}
+     * Возвращает true или WP_Error(403), если удаление выключено настройкой.
+     */
+    public function permission_delete( $request ) {
+        if ( $this->is_delete_enabled() ) {
+            return true;
+        }
+        return new WP_Error(
+            'mtm_delete_disabled',
+            'Deleting from the list is disabled by settings.',
+            ['status' => 403]
+        );
+    }
+
     public function delete(WP_REST_Request $req) {
         $id = (int) $req['id'];
         if ($id <= 0) {
@@ -137,27 +160,23 @@ class MTM_REST_Controller extends WP_REST_Controller {
     public function update(WP_REST_Request $req) {
         $id = (int) $req['id'];
         if ($id <= 0) {
-            return new WP_REST_Response([
-                'success' => false,
-                'message' => 'Bad ID',
-            ], 400);
+            return new WP_REST_Response(['success' => false, 'message' => 'Bad ID'], 400);
         }
 
+        $params  = (array) $req->get_json_params();
         $payload = [];
-        if ($req->offsetExists('title'))       $payload['title'] = (string)$req->get_param('title');
-        if ($req->offsetExists('description')) $payload['description'] = (string)$req->get_param('description');
+        if (array_key_exists('title', $params))       $payload['title'] = (string) $params['title'];
+        if (array_key_exists('description', $params)) $payload['description'] = (string) $params['description'];
+
+        if (!$payload) {
+            return new WP_REST_Response(['success' => false, 'message' => 'Nothing to update'], 400);
+        }
 
         $res = $this->svc->update($id, $payload);
         if (is_wp_error($res)) {
-            return new WP_REST_Response([
-                'success' => false,
-                'message' => $res->get_error_message(),
-            ], 400);
+            return new WP_REST_Response(['success' => false, 'message' => $res->get_error_message()], 400);
         }
 
-        return new WP_REST_Response([
-            'success' => true,
-            'item'    => $res,
-        ], 200);
+        return new WP_REST_Response(['success' => true, 'item' => $res], 200);
     }
 }
