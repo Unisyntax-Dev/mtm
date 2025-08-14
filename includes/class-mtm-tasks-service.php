@@ -35,11 +35,15 @@ class MTM_Tasks_Service {
         $data = [
             'title'       => $title,
             'description' => $description,
-            'created_by'  => $user_id ? (int)$user_id : null,
             'created_at'  => current_time('mysql', true), // UTC timestamp
         ];
 
-        $formats = ['%s', '%s', '%d', '%s'];
+        $formats = ['%s', '%s', '%s'];
+
+        if ($user_id !== null) {
+            $data['created_by'] = (int) $user_id;
+            $formats[] = '%d';
+        }
 
         $ok = $wpdb->insert($this->table, $data, $formats);
         if (!$ok) {
