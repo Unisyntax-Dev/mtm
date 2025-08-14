@@ -18,7 +18,6 @@ $files = [
     'class-mtm-admin-menu.php',
     'class-mtm-shortcodes.php',
     'class-mtm-rest-controller.php',
-    'class-mtm-db.php',
     'class-mtm-tasks-service.php',
     'class-mtm-settings.php',
 ];
