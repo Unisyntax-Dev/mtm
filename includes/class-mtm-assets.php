@@ -59,7 +59,7 @@ class MTM_Assets {
                 'nonce'    => wp_create_nonce('wp_rest'),
                 'settings' => $opt,
                 'assets'   => [
-                    'icons' => MTM_URL . 'assets/src/public/icons/',
+                    'icons' => MTM_URL . 'assets/dist/icons/',
                 ],
             ]);
         }
