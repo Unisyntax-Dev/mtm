@@ -23,6 +23,7 @@ export default function App() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [notice, setNotice] = useState<string | null>(null);
+    const [noticeType, setNoticeType] = useState<"success" | "deleted">("success");
 
     const iconsBase = (window as any).MTM?.assets?.icons ?? "";
 
@@ -70,11 +71,13 @@ export default function App() {
             setTitle("");
             setDesc("");
             setTasks(res.items || []);
+            setNoticeType("success");
             setNotice("Task created");
             setError(null);
         } else {
             setError(res?.message || "Create failed");
             setNotice(null);
+            setNoticeType("success");
         }
     };
 
@@ -84,11 +87,13 @@ export default function App() {
         const res = await deleteTask(id);
         if (res?.success) {
             setTasks(res.items || []);
+            setNoticeType("deleted");
             setNotice("Task deleted");
             setError(null);
         } else {
             setError(res?.message || "Delete failed");
             setNotice(null);
+            setNoticeType("success");
         }
     };
 
@@ -113,6 +118,7 @@ export default function App() {
         if (!newTitle) {
             setError("Title is required");
             setNotice(null);
+            setNoticeType("success");
             return;
         }
 
@@ -123,11 +129,13 @@ export default function App() {
         if (res?.success) {
             setTasks((prev) => prev.map((t) => (t.id === id ? res.item : t)));
             cancelEdit();
+            setNoticeType("success");
             setNotice("Task updated");
             setError(null);
         } else {
             setError(res?.message || "Update failed");
             setNotice(null);
+            setNoticeType("success");
         }
     };
 
@@ -139,7 +147,7 @@ export default function App() {
                 </div>
             )}
             {notice && (
-                <div role="status" className="mtm__notice mtm__notice--success">
+                <div role="status" className={`mtm__notice mtm__notice--${noticeType}`}>
                     {notice}
                 </div>
             )}
