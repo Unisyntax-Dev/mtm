@@ -256,7 +256,23 @@ class MTM_REST_Controller extends WP_REST_Controller {
 
         $res = $this->svc->update($id, $payload);
         if (is_wp_error($res)) {
-            return new WP_REST_Response(['success' => false, 'message' => $res->get_error_message()], 400);
+            $status = 400;
+            switch ($res->get_error_code()) {
+                case 'mtm_not_found':
+                    $status = 404;
+                    break;
+                case 'mtm_update_failed':
+                    $status = 500;
+                    break;
+            }
+            return new WP_REST_Response(
+                ['success' => false, 'message' => $res->get_error_message()],
+                $status
+            );
+        }
+
+        if ($res === null) {
+            return new WP_REST_Response(['success' => false, 'message' => 'Task not found'], 404);
         }
 
         return new WP_REST_Response(['success' => true, 'item' => $res], 200);

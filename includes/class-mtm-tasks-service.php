@@ -132,6 +132,10 @@ class MTM_Tasks_Service {
             return new WP_Error('mtm_update_failed', __('Failed to update task', 'mini-task-manager'));
         }
 
+        if ($ok === 0) {
+            return new WP_Error('mtm_not_found', __('Task not found', 'mini-task-manager'));
+        }
+
         return $this->get($id);
     }
 
