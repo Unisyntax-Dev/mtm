@@ -15,10 +15,17 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 
 global $wpdb;
 
-// Build the full table name with the current site's prefix.
-// Note: In multisite, uninstall runs per site context.
-$table_name = $wpdb->prefix . 'mtm_tasks';
+if ( is_multisite() ) {
+    // In multisite, drop the table for each site.
+    foreach ( get_sites() as $site ) {
+        switch_to_blog( $site->blog_id );
 
-// Remove the custom table created by the plugin.
-// IF EXISTS prevents errors if the table is already gone.
-$wpdb->query( "DROP TABLE IF EXISTS {$table_name}" );
+        $table_name = $wpdb->prefix . 'mtm_tasks';
+        $wpdb->query( "DROP TABLE IF EXISTS {$table_name}" );
+
+        restore_current_blog();
+    }
+} else {
+    $table_name = $wpdb->prefix . 'mtm_tasks';
+    $wpdb->query( "DROP TABLE IF EXISTS {$table_name}" );
+}
