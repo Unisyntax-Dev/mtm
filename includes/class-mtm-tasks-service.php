@@ -1,18 +1,27 @@
 <?php
-if (!defined('ABSPATH')) exit;
+if (!defined('ABSPATH')) exit; // Prevent direct access to the file
 
 class MTM_Tasks_Service {
-    /** @var string */
+    /** @var string Full table name including WP prefix */
     private $table;
 
     public function __construct() {
         global $wpdb;
+        // Set the table name for tasks
         $this->table = $wpdb->prefix . 'mtm_tasks';
     }
 
     /* =======================
      * Create
      * ======================= */
+    /**
+     * Create a new task.
+     *
+     * @param string   $title       Task title (required)
+     * @param string   $description Task description (optional)
+     * @param int|null $user_id     Creator's user ID (optional)
+     * @return array|WP_Error       Created task data or error object
+     */
     public function create(string $title, string $description = '', ?int $user_id = null) {
         global $wpdb;
 
@@ -27,7 +36,7 @@ class MTM_Tasks_Service {
             'title'       => $title,
             'description' => $description,
             'created_by'  => $user_id ? (int)$user_id : null,
-            'created_at'  => current_time('mysql', true), // UTC
+            'created_at'  => current_time('mysql', true), // UTC timestamp
         ];
 
         $formats = ['%s', '%s', '%d', '%s'];
@@ -41,8 +50,14 @@ class MTM_Tasks_Service {
     }
 
     /* =======================
-     * Read (one)
+     * Read (single task)
      * ======================= */
+    /**
+     * Get a single task by ID.
+     *
+     * @param int $id
+     * @return array|null
+     */
     public function get(int $id) {
         global $wpdb;
         $row = $wpdb->get_row(
@@ -53,8 +68,14 @@ class MTM_Tasks_Service {
     }
 
     /* =======================
-     * Read (list recent)
+     * Read (list recent tasks)
      * ======================= */
+    /**
+     * Get a list of the most recent tasks.
+     *
+     * @param int $limit
+     * @return array
+     */
     public function list_recent(int $limit = 5): array {
         global $wpdb;
         $limit = max(1, (int)$limit);
@@ -75,6 +96,13 @@ class MTM_Tasks_Service {
     /* =======================
      * Update
      * ======================= */
+    /**
+     * Update an existing task.
+     *
+     * @param int   $id
+     * @param array $fields
+     * @return array|WP_Error
+     */
     public function update(int $id, array $fields) {
         global $wpdb;
 
@@ -110,6 +138,12 @@ class MTM_Tasks_Service {
     /* =======================
      * Delete
      * ======================= */
+    /**
+     * Delete a task by ID.
+     *
+     * @param int $id
+     * @return bool|WP_Error
+     */
     public function delete(int $id) {
         global $wpdb;
         $deleted = $wpdb->delete($this->table, ['id' => (int)$id], ['%d']);
@@ -123,6 +157,9 @@ class MTM_Tasks_Service {
      * Helpers
      * ======================= */
 
+    /**
+     * Sanitize and trim task title.
+     */
     private function sanitize_title(string $title): string {
         $title = trim(wp_strip_all_tags($title));
         if (function_exists('mb_substr')) {
@@ -133,8 +170,11 @@ class MTM_Tasks_Service {
         return $title;
     }
 
+    /**
+     * Sanitize task description, allow basic HTML, and limit length.
+     */
     private function sanitize_description(string $desc): string {
-        // Разрешим базовую разметку
+        // Allow basic formatting tags
         $allowed = [
             'a'      => ['href' => true, 'title' => true, 'target' => true, 'rel' => true],
             'br'     => [],
@@ -145,7 +185,7 @@ class MTM_Tasks_Service {
             'code'   => [], 'pre' => [],
         ];
         $desc = wp_kses($desc, $allowed);
-        // Ограничим разумную длину
+        // Limit length
         if (function_exists('mb_substr')) {
             $desc = mb_substr($desc, 0, 5000);
         } else {
@@ -154,13 +194,16 @@ class MTM_Tasks_Service {
         return $desc;
     }
 
+    /**
+     * Format a task row for output, including localized date formatting.
+     */
     private function format_row(array $row): array {
-        // Приводим формат даты к локали WP (по желанию)
+        // Convert UTC date to WP local format
         if (!empty($row['created_at'])) {
             $ts = strtotime($row['created_at'] . ' UTC');
             $row['created_at'] = $ts ? date_i18n(get_option('date_format') . ' ' . get_option('time_format'), $ts) : $row['created_at'];
         }
-        // Безопасный вывод делай на уровне шаблона (esc_html и т.п.)
+        // Return formatted array
         return [
             'id'          => (int)$row['id'],
             'title'       => $row['title'],

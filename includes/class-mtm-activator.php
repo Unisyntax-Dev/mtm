@@ -1,14 +1,23 @@
 <?php
+/**
+ * Handles plugin activation tasks.
+ *
+ * Creates required database tables on activation.
+ * Supports both single-site and multisite (network) activation.
+ *
+ * @package Mini_Task_Manager
+ */
 
-if (!defined('ABSPATH')) exit;
+if (!defined('ABSPATH')) exit; // Prevent direct access
 
 class MTM_Activator
 {
     /**
      * Called by WordPress when the plugin is activated.
+     *
      * Network activation is supported for multisite installations.
      *
-     * @param bool $network_wide Passed by WP if the plugin is activated network-wide.
+     * @param bool $network_wide True if the plugin is activated network-wide in multisite.
      */
     public static function activate($network_wide = false)
     {
@@ -27,7 +36,9 @@ class MTM_Activator
     }
 
     /**
-     * Create plugin database tables.
+     * Create plugin-specific database tables.
+     *
+     * Uses dbDelta() to handle both creation and schema updates.
      */
     private static function create_tables()
     {
@@ -38,7 +49,7 @@ class MTM_Activator
         $table_name      = $wpdb->prefix . 'mtm_tasks';
         $charset_collate = $wpdb->get_charset_collate();
 
-        // Main task table
+        // Main task table schema
         $sql = "CREATE TABLE {$table_name} (
             id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
             title VARCHAR(255) NOT NULL,
@@ -50,6 +61,7 @@ class MTM_Activator
             KEY created_at (created_at)
         ) {$charset_collate};";
 
+        // dbDelta will create or update the table as needed
         dbDelta($sql);
 
         // Store the schema version in options — useful for future migrations

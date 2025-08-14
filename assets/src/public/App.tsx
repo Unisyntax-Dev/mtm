@@ -1,23 +1,43 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { listTasks, createTask, deleteTask, updateTask, type Task } from "../shared/api";
+import {
+    listTasks,
+    createTask,
+    deleteTask,
+    updateTask,
+    type Task
+} from "../shared/api";
 
+/**
+ * Main React component for the Mini Task Manager public UI.
+ *
+ * Handles:
+ * - Task creation form
+ * - Listing tasks
+ * - Deleting tasks (if enabled in settings)
+ * - Inline editing of tasks (if enabled in settings)
+ */
 export default function App() {
     const [title, setTitle] = useState("");
     const [desc, setDesc] = useState("");
     const [tasks, setTasks] = useState<Task[]>([]);
     const [loading, setLoading] = useState(false);
 
+    const iconsBase = (window as any).MTM?.assets?.icons ?? "";
+
     const canDelete = ((window as any).MTM?.settings?.enable_delete ?? 1) == 1;
+    const canEdit   = ((window as any).MTM?.settings?.enable_edit ?? 1) == 1;
 
     // --- Editing state ---
     const [editingId, setEditingId] = useState<number | null>(null);
     const [draftTitle, setDraftTitle] = useState("");
-    const [draftDesc, setDraftDesc] = useState("");
-    const [savingId, setSavingId] = useState<number | null>(null);
+    const [draftDesc, setDraftDesc]   = useState("");
+    const [savingId, setSavingId]     = useState<number | null>(null);
 
+    // AbortController for request cancellation on unmount
     const aborter = useMemo(() => new AbortController(), []);
     useEffect(() => () => aborter.abort(), [aborter]);
 
+    // Fetch tasks from API
     const refresh = async () => {
         const res = await listTasks(undefined, aborter.signal);
         if (res?.success) setTasks(res.items || []);
@@ -27,6 +47,7 @@ export default function App() {
         refresh();
     }, []);
 
+    // --- Create task ---
     const onSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         const t = title.trim();
@@ -47,6 +68,7 @@ export default function App() {
         }
     };
 
+    // --- Delete task ---
     const onDelete = async (id: number) => {
         if (!canDelete) return;
         const res = await deleteTask(id);
@@ -70,7 +92,7 @@ export default function App() {
 
     const saveEdit = async (id: number) => {
         const newTitle = draftTitle.trim();
-        const newDesc = draftDesc.trim();
+        const newDesc  = draftDesc.trim();
 
         if (!newTitle) {
             alert("Title is required");
@@ -91,6 +113,7 @@ export default function App() {
 
     return (
         <div className="mtm">
+            {/* Task creation form */}
             <form className="mtm__form" onSubmit={onSubmit}>
                 <label className="mtm__label">Title*</label>
                 <input
@@ -117,7 +140,7 @@ export default function App() {
 
                 {tasks.map((t) => {
                     const isEditing = editingId === t.id;
-                    const isSaving = savingId === t.id;
+                    const isSaving  = savingId === t.id;
 
                     return (
                         <li key={t.id} className="mtm__item">
@@ -126,22 +149,26 @@ export default function App() {
                                     <>
                                         <strong>{t.title}</strong>
                                         <div className="mtm__item-actions">
-                                            <button
-                                                className="mtm__edit"
-                                                onClick={() => startEdit(t)}
-                                                aria-label="Edit"
-                                                type="button"
-                                            >
-                                                ✎
-                                            </button>
+                                            {canEdit && (
+                                                <button
+                                                    className="mtm__iconbtn mtm__iconbtn--sm"
+                                                    onClick={() => startEdit(t)}
+                                                    type="button"
+                                                    aria-label="Edit"
+                                                    title="Edit"
+                                                >
+                                                    <img src={`${iconsBase}edit.svg`} alt="" className="mtm__icon" aria-hidden="true" />
+                                                </button>
+                                            )}
                                             {canDelete && (
                                                 <button
-                                                    className="mtm__delete"
+                                                    className="mtm__iconbtn mtm__iconbtn--danger mtm__iconbtn--sm"
                                                     onClick={() => onDelete(t.id)}
-                                                    aria-label="Delete"
                                                     type="button"
+                                                    aria-label="Delete"
+                                                    title="Delete"
                                                 >
-                                                    ×
+                                                    <img src={`${iconsBase}cross.svg`} alt="" className="mtm__icon" aria-hidden="true" />
                                                 </button>
                                             )}
                                         </div>
@@ -157,20 +184,27 @@ export default function App() {
                                         />
                                         <div className="mtm__item-actions">
                                             <button
-                                                className="mtm__btn mtm__btn--small"
+                                                className="mtm__iconbtn mtm__iconbtn--primary mtm__iconbtn--sm"
                                                 onClick={() => saveEdit(t.id)}
                                                 disabled={isSaving}
                                                 type="button"
+                                                aria-label={isSaving ? "Saving..." : "Save"}
+                                                title={isSaving ? "Saving..." : "Save"}
                                             >
-                                                {isSaving ? "Saving..." : "Save"}
+                                                <img src={`${iconsBase}tick.svg`} alt="" className="mtm__icon" aria-hidden="true" />
+                                                <span className="sr-only">{isSaving ? "Saving..." : "Save"}</span>
                                             </button>
+
                                             <button
-                                                className="mtm__btn mtm__btn--ghost mtm__btn--small"
+                                                className="mtm__iconbtn mtm__iconbtn--ghost mtm__iconbtn--sm"
                                                 onClick={cancelEdit}
                                                 disabled={isSaving}
                                                 type="button"
+                                                aria-label="Cancel"
+                                                title="Cancel"
                                             >
-                                                Cancel
+                                                <img src={`${iconsBase}cancel.svg`} alt="" className="mtm__icon" aria-hidden="true" />
+                                                <span className="sr-only">Cancel</span>
                                             </button>
                                         </div>
                                     </>
@@ -189,11 +223,11 @@ export default function App() {
                                 </>
                             ) : (
                                 <div className="mtm__edit-area">
-                  <textarea
-                      className="mtm__textarea"
-                      value={draftDesc}
-                      onChange={(e) => setDraftDesc(e.target.value)}
-                  />
+                                    <textarea
+                                        className="mtm__textarea"
+                                        value={draftDesc}
+                                        onChange={(e) => setDraftDesc(e.target.value)}
+                                    />
                                 </div>
                             )}
                         </li>
