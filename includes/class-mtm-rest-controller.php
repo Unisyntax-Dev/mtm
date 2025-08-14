@@ -190,10 +190,17 @@ class MTM_REST_Controller extends WP_REST_Controller {
         }
 
         $res = $this->svc->delete($id);
-        if (is_wp_error($res) || !$res) {
+        if (is_wp_error($res)) {
+            $status = $res->get_error_code() === 'mtm_not_found' ? 404 : 500;
             return new WP_REST_Response([
                 'success' => false,
-                'message' => is_wp_error($res) ? $res->get_error_message() : 'Delete failed',
+                'message' => $res->get_error_message(),
+            ], $status);
+        }
+        if (!$res) {
+            return new WP_REST_Response([
+                'success' => false,
+                'message' => 'Delete failed',
             ], 500);
         }
 

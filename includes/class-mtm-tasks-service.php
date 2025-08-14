@@ -151,8 +151,11 @@ class MTM_Tasks_Service {
     public function delete(int $id) {
         global $wpdb;
         $deleted = $wpdb->delete($this->table, ['id' => (int)$id], ['%d']);
-        if (!$deleted) {
+        if ($deleted === false) {
             return new WP_Error('mtm_delete_failed', __('Failed to delete task', 'mini-task-manager'));
+        }
+        if ($deleted === 0) {
+            return new WP_Error('mtm_not_found', __('Task not found', 'mini-task-manager'));
         }
         return true;
     }
