@@ -156,6 +156,13 @@ class MTM_Settings {
      */
     public function render_settings_form() {
         echo '<div class="wrap"><h1>' . esc_html__('Mini Task Manager', 'mini-task-manager') . '</h1>';
+
+        // Info block about shortcode
+        echo '<div style="background: #fff; border-left: 4px solid #0073aa; padding: 12px; margin: 20px 0;">';
+        echo '<p style="margin: 0;">' . esc_html__('To display the task manager on the front-end, use the shortcode:', 'mini-task-manager') . '</p>';
+        echo '<code>[mini_task_manager]</code>';
+        echo '</div>';
+
         echo '<form action="options.php" method="post">';
         settings_fields('mtm_settings_group');     // Outputs nonce + option group fields
         do_settings_sections('mtm_settings_page'); // Renders sections & fields
