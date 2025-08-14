@@ -59,13 +59,21 @@ async function request<T>(
     const headers: Record<string, string> = { "X-WP-Nonce": nonce };
     if (body !== undefined) headers["Content-Type"] = "application/json";
 
-    const res = await fetch(url, {
-        method,
-        headers,
-        body: body !== undefined ? JSON.stringify(body) : undefined,
-        signal,
-        credentials: "same-origin",
-    });
+    let res: Response;
+    try {
+        res = await fetch(url, {
+            method,
+            headers,
+            body: body !== undefined ? JSON.stringify(body) : undefined,
+            signal,
+            credentials: "same-origin",
+        });
+    } catch (err: any) {
+        return {
+            success: false,
+            message: err?.message || "Network error",
+        } as any as T;
+    }
 
     let json: any = null;
     try {

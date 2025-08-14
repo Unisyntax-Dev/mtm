@@ -23,8 +23,9 @@
     border-radius: $radius-sm;
     font-size: $fs-base;
 
-    &:focus-visible {
-      @include focus-ring();
+    &:focus {
+      outline: none;
+      border: 1px solid $primary;
     }
   }
 

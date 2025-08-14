@@ -41,6 +41,7 @@ export default function App() {
     const refresh = async () => {
         const res = await listTasks(undefined, aborter.signal);
         if (res?.success) setTasks(res.items || []);
+        else alert(res?.message || "Fetch failed");
     };
 
     useEffect(() => {
