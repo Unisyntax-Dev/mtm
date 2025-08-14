@@ -1,0 +1,58 @@
+/* === BUTTONS ==== */
+@use "./tokens" as *;
+@use "mixins" as *;
+
+.mtm {
+  &__icon {
+    @include icon-size(16px);
+  }
+
+  &__iconbtn {
+    @include button-reset;
+    width: 32px;
+    height: 32px;
+    border-radius: $radius-round;
+    box-shadow: none;
+
+    background-image: linear-gradient(90deg, $primary-grad-from 0%, $primary-grad-to 100%);
+    transition: all .3s ease;
+
+    &:hover {
+      background-image: linear-gradient(90deg, $primary-grad-from-hover 0%, $primary-grad-to-hover 100%);
+    }
+
+    &:active {
+      transform: translateY(1px);
+    }
+
+    &:focus {
+      outline: none;
+    }
+
+    &:disabled {
+      opacity: .6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    &--sm {
+      width: 28px;
+      height: 28px;
+    }
+
+    &--primary {
+      background: var(--mtm-primary-bg);
+      color: var(--mtm-primary-fg);
+      border-color: var(--mtm-primary-bg);
+
+      &:hover {
+        background: var(--mtm-primary-hov);
+        border-color: var(--mtm-primary-hov);
+      }
+
+      &:focus-visible {
+        box-shadow: $shadow-focus;
+      }
+    }
+  }
+}

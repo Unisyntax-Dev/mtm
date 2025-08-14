@@ -1,0 +1,25 @@
+/* === ROOT CONTAINER ==== */
+@use "./tokens" as *;
+
+.mtm {
+  &, * , *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  max-width: 560px;
+  padding: $sp-4;
+  border: 1px solid $border;
+  border-radius: $radius-md;
+  color: $fg;
+  background: $surface;
+
+  --mtm-fg: #{$fg};
+  --mtm-border: #{$border};
+  --mtm-bg-hover: #{$bg-hover};
+  --mtm-surface: #{$surface};
+
+  --mtm-primary-bg: #{$primary};
+  --mtm-primary-fg: #{$primary-fg};
+  --mtm-primary-hov: #{$primary-hov};
+
+}

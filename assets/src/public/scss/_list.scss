@@ -1,0 +1,54 @@
+/* === LIST ==== */
+@use "./tokens" as *;
+
+.mtm {
+  &__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: $sp-3;
+  }
+
+  &__item {
+    padding: $sp-3;
+    border: 1px solid var(--mtm-border);
+    border-radius: $radius-sm;
+    background: var(--mtm-surface);
+  }
+
+  &__item-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: $sp-3;
+    margin-bottom: $sp-4;
+  }
+
+  &__item-title {
+    font-size: $fs-base;
+    font-weight: $fw-semibold;
+  }
+
+  &__item-actions {
+    display: inline-flex;
+    gap: $sp-2;
+    align-items: center;
+  }
+
+  &__desc {
+    font-size: $fs-base;
+    margin-top: $sp-2;
+    white-space: pre-wrap;
+  }
+
+  &__date {
+    margin-top: $sp-2;
+    font-size: $fs-xs;
+    color: #666;
+  }
+
+  &__empty {
+    color: #888;
+  }
+}

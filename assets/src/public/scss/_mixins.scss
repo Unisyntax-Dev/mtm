@@ -1,0 +1,26 @@
+/* === MIXINS ==== */
+@use "./tokens" as *;
+
+@mixin focus-ring($shadow: $shadow-focus) {
+  outline: none;
+}
+
+@mixin button-reset {
+  -webkit-tap-highlight-color: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  background: transparent;
+  padding: 0;
+  line-height: 1;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+@mixin icon-size($size: 16px) {
+  width: $size;
+  height: $size;
+  display: block;
+  pointer-events: none;
+}

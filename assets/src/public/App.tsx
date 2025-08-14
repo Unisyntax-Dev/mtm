@@ -115,21 +115,25 @@ export default function App() {
         <div className="mtm">
             {/* Task creation form */}
             <form className="mtm__form" onSubmit={onSubmit}>
-                <label className="mtm__label">Title*</label>
+                <label className="mtm__label" htmlFor="mtm-title">Title*</label>
                 <input
+                    id="mtm-title"
+                    name="title"
                     className="mtm__input"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     maxLength={255}
                     required
                 />
-                <label className="mtm__label">Description</label>
+                <label className="mtm__label" htmlFor="mtm-desc">Description</label>
                 <textarea
+                    id="mtm-desc"
+                    name="description"
                     className="mtm__textarea"
                     value={desc}
                     onChange={(e) => setDesc(e.target.value)}
                 />
-                <button className="mtm__btn" type="submit" disabled={loading}>
+                <button className="mtm__btn mtm__btn--primary" type="submit" disabled={loading}>
                     {loading ? "Saving..." : "Add task"}
                 </button>
             </form>
@@ -147,11 +151,11 @@ export default function App() {
                             <div className="mtm__item-head">
                                 {!isEditing ? (
                                     <>
-                                        <strong>{t.title}</strong>
+                                        <div className="mtm__item-title">{t.title}</div>
                                         <div className="mtm__item-actions">
                                             {canEdit && (
                                                 <button
-                                                    className="mtm__iconbtn mtm__iconbtn--sm"
+                                                    className="mtm__iconbtn mtm__iconbtn--primary mtm__iconbtn--sm"
                                                     onClick={() => startEdit(t)}
                                                     type="button"
                                                     aria-label="Edit"
@@ -162,7 +166,7 @@ export default function App() {
                                             )}
                                             {canDelete && (
                                                 <button
-                                                    className="mtm__iconbtn mtm__iconbtn--danger mtm__iconbtn--sm"
+                                                    className="mtm__iconbtn mtm__iconbtn--primary mtm__iconbtn--sm"
                                                     onClick={() => onDelete(t.id)}
                                                     type="button"
                                                     aria-label="Delete"
@@ -176,7 +180,9 @@ export default function App() {
                                 ) : (
                                     <>
                                         <input
-                                            className="mtm__input mtm__input--inline"
+                                            id="mtm-edit-title"
+                                            name="edit-title"
+                                            className="mtm__input"
                                             value={draftTitle}
                                             onChange={(e) => setDraftTitle(e.target.value)}
                                             maxLength={255}
@@ -196,7 +202,7 @@ export default function App() {
                                             </button>
 
                                             <button
-                                                className="mtm__iconbtn mtm__iconbtn--ghost mtm__iconbtn--sm"
+                                                className="mtm__iconbtn mtm__iconbtn--primary mtm__iconbtn--sm"
                                                 onClick={cancelEdit}
                                                 disabled={isSaving}
                                                 type="button"
@@ -224,6 +230,8 @@ export default function App() {
                             ) : (
                                 <div className="mtm__edit-area">
                                     <textarea
+                                        id="mtm-edit-desc"
+                                        name="edit-description"
                                         className="mtm__textarea"
                                         value={draftDesc}
                                         onChange={(e) => setDraftDesc(e.target.value)}
