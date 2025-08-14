@@ -7,7 +7,7 @@ import { createRoot } from "react-dom/client";
  * Currently renders a placeholder; extend this component to implement
  * admin-specific UI such as task management tools or reports.
  */
-const AdminApp = () => <div>Mini Task Manager (admin)</div>;
+const AdminApp = () => <div></div>;
 
 // Mount the admin app into the element with ID "mtm-admin-root"
 const el = document.getElementById("mtm-admin-root");

@@ -155,13 +155,16 @@ class MTM_Settings {
      * Render the full settings page form.
      */
     public function render_settings_form() {
-        echo '<div class="wrap"><h1>' . esc_html__('Mini Task Manager', 'mini-task-manager') . '</h1>';
+        echo '<div class="mtm-admin-wrap wrap"><h1>' . esc_html__('Mini Task Manager', 'mini-task-manager') . '</h1>';
 
         // Info block about shortcode
         echo '<div style="background: #fff; border-left: 4px solid #0073aa; padding: 12px; margin: 20px 0;">';
         echo '<p style="margin: 0;">' . esc_html__('To display the task manager on the front-end, use the shortcode:', 'mini-task-manager') . '</p>';
         echo '<code>[mini_task_manager]</code>';
         echo '</div>';
+
+        // React admin mount point
+        echo '<div id="mtm-admin-root"></div>';
 
         echo '<form action="options.php" method="post">';
         settings_fields('mtm_settings_group');     // Outputs nonce + option group fields

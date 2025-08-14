@@ -73,29 +73,25 @@ class MTM_Assets {
      * @param string $hook Current admin page hook suffix.
      */
     public function enqueue_admin($hook) {
-        $our_screen = 'settings_page_mtm_settings_page';
-        if ($hook !== $our_screen) return;
+
+        $screen = function_exists('get_current_screen') ? get_current_screen() : null;
+        $screen_id = $screen ? $screen->id : (string) $hook;
+
+        $valid_ids = ['toplevel_page_mtm', 'settings_page_mtm_settings_page'];
+
+        if (!in_array($screen_id, $valid_ids, true) && strpos($screen_id, 'mtm') === false) {
+            return;
+        }
 
         $dir = MTM_PATH . 'assets/dist/';
         $url = MTM_URL  . 'assets/dist/';
 
         if (file_exists($dir . 'admin.js')) {
             if (file_exists($dir . 'admin.css')) {
-                wp_enqueue_style(
-                    'mtm-admin',
-                    $url . 'admin.css',
-                    [],
-                    filemtime($dir . 'admin.css')
-                );
+                wp_enqueue_style('mtm-admin', $url . 'admin.css', [], filemtime($dir . 'admin.css'));
             }
 
-            wp_enqueue_script(
-                'mtm-admin',
-                $url . 'admin.js',
-                [],
-                filemtime($dir . 'admin.js'),
-                true
-            );
+            wp_enqueue_script('mtm-admin', $url . 'admin.js', [], filemtime($dir . 'admin.js'), true);
 
             wp_localize_script('mtm-admin', 'MTM', [
                 'rest'  => esc_url_raw(untrailingslashit(rest_url('mtm/v1'))),
