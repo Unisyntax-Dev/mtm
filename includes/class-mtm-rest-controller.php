@@ -43,7 +43,7 @@ class MTM_REST_Controller extends WP_REST_Controller {
             [
                 'methods'  => WP_REST_Server::READABLE,   // GET /tasks[?limit=...]
                 'callback' => [$this, 'list'],
-                'permission_callback' => '__return_true',
+                'permission_callback' => [$this, 'permission_public'],
                 'args' => [
                     'limit' => [
                         'type'     => 'integer',
@@ -56,7 +56,7 @@ class MTM_REST_Controller extends WP_REST_Controller {
             [
                 'methods'  => WP_REST_Server::CREATABLE,  // POST /tasks
                 'callback' => [$this, 'create'],
-                'permission_callback' => '__return_true',
+                'permission_callback' => [$this, 'permission_public'],
                 'args' => [
                     'title'       => ['required' => true,  'type' => 'string'],
                     'description' => ['required' => false, 'type' => 'string'],
@@ -80,6 +80,31 @@ class MTM_REST_Controller extends WP_REST_Controller {
                 ],
             ],
         ]);
+    }
+
+    /**
+     * Permission callback for list/create routes.
+     *
+     * @return true|WP_Error
+     */
+    public function permission_public( $req ) {
+        if ( ! check_ajax_referer( 'wp_rest', '_wpnonce', false ) ) {
+            return new WP_Error(
+                'rest_forbidden',
+                'Invalid or missing nonce.',
+                [ 'status' => 403 ]
+            );
+        }
+
+        if ( ! current_user_can( 'read' ) ) {
+            return new WP_Error(
+                'rest_forbidden',
+                'Sorry, you are not allowed to do that.',
+                [ 'status' => 403 ]
+            );
+        }
+
+        return true;
     }
 
     /**

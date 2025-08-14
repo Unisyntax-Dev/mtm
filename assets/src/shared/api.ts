@@ -56,6 +56,8 @@ async function request<T>(
     body?: unknown,
     signal?: AbortSignal
 ): Promise<T> {
+    url = withQuery(url, `_wpnonce=${encodeURIComponent(nonce)}`);
+
     const headers: Record<string, string> = { "X-WP-Nonce": nonce };
     if (body !== undefined) headers["Content-Type"] = "application/json";
 
@@ -83,7 +85,11 @@ async function request<T>(
     }
 
     if (!res.ok) {
-        const msg = json?.message || `Request failed (${res.status})`;
+        const msg =
+            json?.message ||
+            (res.status === 403
+                ? "Forbidden"
+                : `Request failed (${res.status})`);
         return { success: false, message: msg } as any as T;
     }
     return json as T;
