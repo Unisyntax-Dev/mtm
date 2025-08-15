@@ -55,6 +55,12 @@ export default function App() {
         refresh();
     }, []);
 
+    useEffect(() => {
+        if (!notice) return;
+        const timeout = setTimeout(() => setNotice(null), 3000);
+        return () => clearTimeout(timeout);
+    }, [notice]);
+
     // --- Create task ---
     const onSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
