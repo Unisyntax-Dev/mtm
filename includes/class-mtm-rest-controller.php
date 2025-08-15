@@ -185,18 +185,31 @@ class MTM_REST_Controller extends WP_REST_Controller {
     /**
      * Permission callback for DELETE /tasks/{id}.
      *
+     *  The capability check defaults to `delete_posts` and can be adjusted
+     *  with the `mtm_rest_delete_capability` filter.
+     *
      * @param WP_REST_Request $request
      * @return true|WP_Error
      */
     public function permission_delete( $request ) {
-        if ( $this->is_delete_enabled() ) {
-            return true;
+        if ( ! $this->is_delete_enabled() ) {
+            return new WP_Error(
+                'mtm_delete_disabled',
+                'Deleting from the list is disabled by settings.',
+                ['status' => 403]
+            );
         }
-        return new WP_Error(
-            'mtm_delete_disabled',
-            'Deleting from the list is disabled by settings.',
-            ['status' => 403]
-        );
+
+        $cap = apply_filters( 'mtm_rest_delete_capability', 'delete_posts', $request );
+        if ( ! current_user_can( $cap ) ) {
+            return new WP_Error(
+                'rest_forbidden',
+                'Sorry, you are not allowed to delete tasks.',
+                ['status' => 403]
+            );
+        }
+
+        return true;
     }
 
     /**
@@ -253,16 +266,31 @@ class MTM_REST_Controller extends WP_REST_Controller {
     /**
      * Permission callback for PUT/PATCH /tasks/{id}.
      *
+     *  The capability check defaults to `edit_posts` and can be adjusted
+     *  with the `mtm_rest_edit_capability` filter.
+     *
      * @param WP_REST_Request $req
      * @return true|WP_Error
      */
     public function permission_edit( $req ) {
-        if ( $this->is_edit_enabled() ) return true;
-        return new WP_Error(
-            'mtm_edit_disabled',
-            'Editing from the list is disabled by settings.',
-            ['status' => 403]
-        );
+        if ( ! $this->is_edit_enabled() ) {
+            return new WP_Error(
+                'mtm_edit_disabled',
+                'Editing from the list is disabled by settings.',
+                ['status' => 403]
+            );
+        }
+
+        $cap = apply_filters( 'mtm_rest_edit_capability', 'edit_posts', $req );
+        if ( ! current_user_can( $cap ) ) {
+            return new WP_Error(
+                'rest_forbidden',
+                'Sorry, you are not allowed to edit tasks.',
+                ['status' => 403]
+            );
+        }
+
+        return true;
     }
 
     /**
